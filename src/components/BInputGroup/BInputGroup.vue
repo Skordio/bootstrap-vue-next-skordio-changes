@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-// import type {InputSize} from '../../types'
+import type {Size} from '../../types'
 import {computed} from 'vue'
 
 interface BInputGroupProps {
@@ -28,17 +28,22 @@ interface BInputGroupProps {
   id?: string
   prepend?: string
   prependHtml?: string
-  size?: 'sm' | 'lg' // Exclude<InputSize, 'md'>
+  size?: Size
   tag?: string
 }
 
 const props = withDefaults(defineProps<BInputGroupProps>(), {
+  append: undefined,
+  appendHtml: undefined,
+  id: undefined,
+  prepend: undefined,
+  prependHtml: undefined,
+  size: 'md',
   tag: 'div',
 })
 
 const computedClasses = computed(() => ({
-  'input-group-sm': props.size === 'sm',
-  'input-group-lg': props.size === 'lg',
+  [`input-group-${props.size}`]: props.size !== 'md',
 }))
 
 const hasAppend = computed<boolean>(() => !!props.append || !!props.appendHtml)

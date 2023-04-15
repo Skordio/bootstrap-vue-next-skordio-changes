@@ -44,12 +44,32 @@ interface BNavItemDropdownProps {
   dropup?: Booleanish
   dropend?: Booleanish
   dropstart?: Booleanish
-  alignStart?: Booleanish
-  alignEnd?: Booleanish
+  center?: Booleanish
+  end?: Booleanish
   menuClass?: ClassValue
 }
 
 const props = withDefaults(defineProps<BNavItemDropdownProps>(), {
+  lazy: undefined,
+  strategy: undefined,
+  floatingMiddleware: undefined,
+  noFlip: undefined,
+  noShift: undefined,
+  dropup: undefined,
+  dropend: undefined,
+  dropstart: undefined,
+  center: undefined,
+  end: undefined,
+  menuClass: undefined,
+  id: undefined,
+  text: undefined,
+  toggleClass: undefined,
+  size: 'md',
+  offset: undefined,
+  autoClose: undefined,
+  dark: undefined,
+  splitVariant: undefined,
+  noCaret: undefined,
   variant: 'link',
   modelValue: false,
 })

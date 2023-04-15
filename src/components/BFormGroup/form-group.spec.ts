@@ -1,8 +1,6 @@
 import {afterEach, describe, expect, it} from 'vitest'
 import {enableAutoUnmount, mount} from '@vue/test-utils'
 import BFormGroup from './BFormGroup.vue'
-import BCol from '../BCol.vue'
-import BFormRow from '../BForm/BFormRow.vue'
 
 describe('form-group', () => {
   enableAutoUnmount(afterEach)
@@ -17,11 +15,6 @@ describe('form-group', () => {
       props: {labelFor: 'foobar'},
     })
     expect(wrapper.element.tagName).toBe('DIV')
-  })
-
-  it('has static class mb-3', () => {
-    const wrapper = mount(BFormGroup)
-    expect(wrapper.classes()).toContain('mb-3')
   })
 
   it('has class is-valid when prop state is true', () => {

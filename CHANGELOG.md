@@ -1,5 +1,67 @@
 # Changelog
 
+## [0.8.4](https://github.com/bootstrap-vue/bootstrap-vue-next/compare/v0.8.3...v0.8.4) (2023-04-12)
+
+
+### Features
+
+* **BFormGroup:** remove mb-3 class being set on row fixes [#370](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/370) ([f091df5](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/f091df5c09108aefe4027ad40bc410be63219a6f))
+
+## [0.8.3](https://github.com/bootstrap-vue/bootstrap-vue-next/compare/v0.8.2...v0.8.3) (2023-04-12)
+
+
+### Features
+
+* **BModal:** add class modal-open to body when modal is open fixes [#976](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/976) ([a3aa36f](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/a3aa36fc0d5028bae404ca5575e74606a9e9e17a))
+* **Common_input_props:** add null as an option fixes [#1015](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/1015) ([a3aa36f](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/a3aa36fc0d5028bae404ca5575e74606a9e9e17a))
+* **Group Items, [select, checkbox etc]:** add null option to value/unchecked value/modelValue fixes # [#962](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/962) ([a3aa36f](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/a3aa36fc0d5028bae404ca5575e74606a9e9e17a))
+* **state:** add null as an option to "state" props, make their default null fixes [#807](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/807) ([a3aa36f](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/a3aa36fc0d5028bae404ca5575e74606a9e9e17a))
+
+## [0.8.2](https://github.com/bootstrap-vue/bootstrap-vue-next/compare/v0.8.1...v0.8.2) (2023-04-11)
+
+
+### Bug Fixes
+
+* **BFormCheckboxGroup & BFormRadioGroup:** groups not emitting their change & input events fixes [#1022](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/1022) ([33b75e2](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/33b75e2bb2838868d73e6b67c78f3ffbe4f65be9))
+* **BFormCheckboxGroup:** emitting update:modelValue correctly as it didn't show a reactive change ([33b75e2](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/33b75e2bb2838868d73e6b67c78f3ffbe4f65be9))
+* **BFormRadio:** modelValue never being set back to false when radio group changes ([33b75e2](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/33b75e2bb2838868d73e6b67c78f3ffbe4f65be9))
+* **BFormRadio:** value not being assigned correctly when value === 0 ([33b75e2](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/33b75e2bb2838868d73e6b67c78f3ffbe4f65be9))
+
+## [0.8.1](https://github.com/bootstrap-vue/bootstrap-vue-next/compare/v0.8.0...v0.8.1) (2023-04-10)
+
+
+### Features
+
+* **BAlert:** add closeVariant prop ([bd0c9e2](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/bd0c9e2e8a3c7568fcb106ef2b7dcbb17dbd3aa1))
+* **BFormRadio & BFormCheckbox:** external controls through v-model when in a group will cause parentData to update on their changes ([9a8139f](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/9a8139f2c4ca7371a3462813b2caa7ecda254690))
+* **BReadcrumbItemObject:** uses RouteLocationRaw for 'to' ([9a8139f](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/9a8139f2c4ca7371a3462813b2caa7ecda254690))
+* export directive vBModal fixes [#1005](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/1005) ([7aa0abd](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/7aa0abd21cb88a20e05410dc4bb364eb964a6a3e))
+
+
+### Bug Fixes
+
+* $attrs explicit inheritance on single root components fixes [#1010](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/1010) ([0de3a7c](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/0de3a7ccf8127ec411071997c316d6f5035379c5))
+* **BFormCheckbox & BFormRadio:** size & buttonVariant is initially undefined, but has a default in class usage -- this allows for you to use parentData & also overwrite parentData when you want one specific to have size/buttonVariant fixes [#1012](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/1012) ([590a9fd](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/590a9fda496334d8f9c5d43235cbd37a263f25bc))
+* **BFormRadio & BFormCheckbox:** nextTick the change emit... This was being emitted before the emit update, causing odd behavior fixes [#1011](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/1011) ([590a9fd](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/590a9fda496334d8f9c5d43235cbd37a263f25bc))
+* **BFormRadioGroup:** set default modelValue to null. Fixes [#1003](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/1003) ([1e196fd](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/1e196fdf272664b5426a22e95f7923ecff757b8a))
+* **BFormTags:** shouldRemoveOnDelete being set in onMounted cb, causing a false value in between the time of being onMounted, and after the onMounted cb finishes ([590a9fd](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/590a9fda496334d8f9c5d43235cbd37a263f25bc))
+* **BModal:** buttonVariants with incorrect type as ColorVariant, when they should be ButtonVariant ([bd0c9e2](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/bd0c9e2e8a3c7568fcb106ef2b7dcbb17dbd3aa1))
+* **BModal:** isActive default value is modelValue, rather than false -&gt; (then onMounted) is set to modelValue --- elimintating a 'waiting issue' of being set to false, then onMounted set to it's correct value ([590a9fd](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/590a9fda496334d8f9c5d43235cbd37a263f25bc))
+* **BModal:** set focus when initial modelValue is true ([590a9fd](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/590a9fda496334d8f9c5d43235cbd37a263f25bc))
+* **BOffcanvas:** focus not being applied at correct times -- should be focused after the animation, (during the animation, it would not apply focus) ([590a9fd](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/590a9fda496334d8f9c5d43235cbd37a263f25bc))
+* **BOffcanvas:** isActive being set in onMounted cb, as to be in the wrong state in between onMounted and the finishing of the onMounted cb ([590a9fd](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/590a9fda496334d8f9c5d43235cbd37a263f25bc))
+* circumvent 'activeValue' on group items and replace it with direct modelValue updates fixes [#1009](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/1009) ([1e196fd](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/1e196fdf272664b5426a22e95f7923ecff757b8a))
+* expose BTable refresh method ([cb10d72](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/cb10d7261a9d69a0c86ccf305ef2d40f3bf0303b))
+* precision typo ([37351cf](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/37351cf14441bc36c00cdbb9bbd5f78fce508382))
+* remove onUnmounted methods from group items fixes [#1007](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/1007) ([1e196fd](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/1e196fdf272664b5426a22e95f7923ecff757b8a))
+* **useFormCheck/getClasses:** class form-control-{size} getting incorrectly applied when value is a button fixes [#857](https://github.com/bootstrap-vue/bootstrap-vue-next/issues/857) ([e8219f2](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/e8219f26839a33c4be8a71fe990bca0e47f77e6e))
+* **useFormCheck/getGroupClasses:** don't apply btn-group-vertical when not buttons ([4cdad44](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/4cdad4429d6e98de5f65eda77bd716b145885581))
+
+
+### Reverts
+
+* **BFormSelect:** don't change BFormSelect just yet. ([a21156b](https://github.com/bootstrap-vue/bootstrap-vue-next/commit/a21156bc779a461ba515ecb24b8fb5739ed3fe8c))
+
 ## [0.8.0](https://github.com/bootstrap-vue/bootstrap-vue-next/compare/v0.7.3...v0.8.0) (2023-04-03)
 
 

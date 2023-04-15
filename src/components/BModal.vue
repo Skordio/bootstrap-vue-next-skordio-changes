@@ -94,10 +94,10 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref, toRef, useSlots} from 'vue'
+import {computed, ref, toRef, useSlots, watch} from 'vue'
 import {useBooleanish, useId} from '../composables'
-import {useEventListener, useFocus, useVModel} from '@vueuse/core'
-import type {Booleanish, ClassValue, ColorVariant, InputSize} from '../types'
+import {useEventListener, useFocus, useDark as useSetAttr, useVModel} from '@vueuse/core'
+import type {Booleanish, ButtonVariant, ClassValue, ColorVariant, Size} from '../types'
 import {BvTriggerableEvent, isEmptySlot} from '../utils'
 import BButton from './BButton/BButton.vue'
 import BCloseButton from './BButton/BCloseButton.vue'
@@ -116,10 +116,10 @@ interface BModalProps {
   bodyTextVariant?: ColorVariant
   busy?: Booleanish
   lazy?: Booleanish
-  buttonSize?: InputSize
+  buttonSize?: Size
   cancelDisabled?: Booleanish
   cancelTitle?: string
-  cancelVariant?: ColorVariant
+  cancelVariant?: ButtonVariant
   centered?: Booleanish
   contentClass?: ClassValue
   dialogClass?: ClassValue
@@ -148,10 +148,10 @@ interface BModalProps {
   okDisabled?: Booleanish
   okOnly?: Booleanish
   okTitle?: string
-  okVariant?: ColorVariant
+  okVariant?: ButtonVariant
   scrollable?: Booleanish
   show?: Booleanish
-  size?: 'sm' | 'lg' | 'xl'
+  size?: Size | 'xl'
   title?: string
   titleClass?: string
   titleSrOnly?: Booleanish
@@ -161,6 +161,25 @@ interface BModalProps {
 }
 
 const props = withDefaults(defineProps<BModalProps>(), {
+  bodyBgVariant: undefined,
+  bodyClass: undefined,
+  bodyTextVariant: undefined,
+  contentClass: undefined,
+  headerTextVariant: undefined,
+  dialogClass: undefined,
+  headerBgVariant: undefined,
+  headerBorderVariant: undefined,
+  headerClass: undefined,
+  footerBgVariant: undefined,
+  footerBorderVariant: undefined,
+  footerClass: undefined,
+  footerTextVariant: undefined,
+  autoFocusButton: undefined,
+  titleClass: undefined,
+  title: undefined,
+  size: 'md',
+  modalClass: undefined,
+  id: undefined,
   busy: false,
   lazy: false,
   buttonSize: 'md',
@@ -231,17 +250,32 @@ const scrollableBoolean = useBooleanish(toRef(props, 'scrollable'))
 const titleSrOnlyBoolean = useBooleanish(toRef(props, 'titleSrOnly'))
 const staticBoolean = useBooleanish(toRef(props, 'static'))
 
+const modalOpen = useSetAttr({
+  attribute: 'class',
+  selector: 'body',
+  valueDark: 'modal-open',
+  valueLight: '',
+})
+
 const element = ref<HTMLElement | null>(null)
 const okButton = ref<HTMLElement | null>(null)
 const cancelButton = ref<HTMLElement | null>(null)
 const closeButton = ref<HTMLElement | null>(null)
-const isActive = ref(false)
+const isActive = ref(modelValueBoolean.value)
 const lazyLoadCompleted = ref(false)
 
-const {focused: modalFocus} = useFocus(element)
-const {focused: okButtonFocus} = useFocus(okButton)
-const {focused: cancelButtonFocus} = useFocus(cancelButton)
-const {focused: closeButtonFocus} = useFocus(closeButton)
+const {focused: modalFocus} = useFocus(element, {
+  initialValue: modelValueBoolean.value && props.autoFocusButton === undefined,
+})
+const {focused: okButtonFocus} = useFocus(okButton, {
+  initialValue: modelValueBoolean.value && props.autoFocusButton === 'ok',
+})
+const {focused: cancelButtonFocus} = useFocus(cancelButton, {
+  initialValue: modelValueBoolean.value && props.autoFocusButton === 'cancel',
+})
+const {focused: closeButtonFocus} = useFocus(closeButton, {
+  initialValue: modelValueBoolean.value && props.autoFocusButton === 'close',
+})
 
 const modalClasses = computed(() => [
   props.modalClass,
@@ -265,7 +299,7 @@ const modalDialogClasses = computed(() => [
   {
     'modal-fullscreen': props.fullscreen === true,
     [`modal-fullscreen-${props.fullscreen}-down`]: typeof props.fullscreen === 'string',
-    [`modal-${props.size}`]: props.size !== undefined,
+    [`modal-${props.size}`]: props.size !== 'md',
     'modal-dialog-centered': centeredBoolean.value,
     'modal-dialog-scrollable': scrollableBoolean.value,
   },
@@ -381,11 +415,13 @@ const onAfterLeave = () => {
   if (lazyBoolean.value === true) lazyLoadCompleted.value = false
 }
 
-onMounted(() => {
-  if (modelValueBoolean.value === true) {
-    isActive.value = true
-  }
-})
+watch(
+  isActive,
+  (newVal) => {
+    modalOpen.value = newVal
+  },
+  {immediate: true}
+)
 
 useEventListener(element, 'bv-toggle', () => {
   modelValueBoolean.value ? hide() : show()

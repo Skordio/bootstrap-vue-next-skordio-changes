@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, provide, ref, toRef, watchEffect} from 'vue'
+import {computed, nextTick, provide, readonly, ref, toRef} from 'vue'
 import BFormCheckbox from './BFormCheckbox.vue'
 import type {AriaInvalid, Booleanish, ButtonVariant, Size} from '../../types'
 import {getGroupAttr, getGroupClasses, useBooleanish, useId} from '../../composables'
@@ -29,7 +29,15 @@ import {useFocus, useVModel} from '@vueuse/core'
 interface BFormCheckboxGroupProps {
   id?: string
   form?: string
-  modelValue?: (unknown[] | Set<unknown> | boolean | string | Record<string, unknown> | number)[]
+  modelValue?: (
+    | unknown[]
+    | Set<unknown>
+    | boolean
+    | string
+    | Record<string, unknown>
+    | number
+    | null
+  )[]
   ariaInvalid?: AriaInvalid
   autofocus?: Booleanish
   buttonVariant?: ButtonVariant
@@ -38,12 +46,12 @@ interface BFormCheckboxGroupProps {
   disabledField?: string
   htmlField?: string
   name?: string
-  options?: (string | Record<string, unknown>)[] // I don't believe it possible to make a strongly typed object if object fields come from a prop
+  options?: (string | number | Record<string, unknown>)[]
   plain?: Booleanish
   required?: Booleanish
   size?: Size
   stacked?: Booleanish
-  state?: Booleanish
+  state?: Booleanish | null
   switches?: Booleanish
   textField?: string
   validated?: Booleanish
@@ -51,12 +59,16 @@ interface BFormCheckboxGroupProps {
 }
 
 const props = withDefaults(defineProps<BFormCheckboxGroupProps>(), {
+  id: undefined,
+  size: 'md',
+  name: undefined,
+  form: undefined,
   modelValue: () => [],
   autofocus: false,
   buttonVariant: 'secondary',
   buttons: false,
   ariaInvalid: undefined,
-  state: undefined,
+  state: null,
   disabled: false,
   disabledField: 'disabled',
   htmlField: 'html',
@@ -71,9 +83,18 @@ const props = withDefaults(defineProps<BFormCheckboxGroupProps>(), {
 })
 
 interface BFormCheckboxGroupEmits {
-  (e: 'input', value: Exclude<BFormCheckboxGroupProps['modelValue'], undefined>): void
-  (e: 'update:modelValue', value: Exclude<BFormCheckboxGroupProps['modelValue'], undefined>): void
-  (e: 'change', value: Exclude<BFormCheckboxGroupProps['modelValue'], undefined>): void
+  (
+    e: 'input',
+    value: (unknown[] | Set<unknown> | boolean | string | Record<string, unknown> | number | null)[]
+  ): void
+  (
+    e: 'update:modelValue',
+    value: (unknown[] | Set<unknown> | boolean | string | Record<string, unknown> | number | null)[]
+  ): void
+  (
+    e: 'change',
+    value: (unknown[] | Set<unknown> | boolean | string | Record<string, unknown> | number | null)[]
+  ): void
 }
 
 const emit = defineEmits<BFormCheckboxGroupEmits>()
@@ -98,60 +119,61 @@ useFocus(element, {
   initialValue: autofocusBoolean.value,
 })
 
-const activeValues = ref<
-  (unknown[] | Set<unknown> | boolean | string | Record<string, unknown> | number)[]
->(modelValue.value)
-
 provide(checkboxGroupKey, {
-  set: (value: unknown[] | Set<unknown> | boolean | string | Record<string, unknown> | number) => {
-    activeValues.value.push(value)
+  set: (
+    value: unknown[] | Set<unknown> | boolean | string | Record<string, unknown> | number | null
+  ) => {
+    const localValue = [...modelValue.value]
+    localValue.push(value)
+
+    emit('input', localValue)
+    modelValue.value = localValue
+    nextTick(() => {
+      emit('change', localValue)
+    })
   },
   remove: (
-    value: unknown[] | Set<unknown> | boolean | string | Record<string, unknown> | number
+    value: unknown[] | Set<unknown> | boolean | string | Record<string, unknown> | number | null
   ) => {
-    activeValues.value.splice(activeValues.value.indexOf(value), 1)
+    const localValue = [...modelValue.value]
+    // TODO if the value is an array, set, or object, indexOf may not work correctly
+    localValue.splice(modelValue.value.indexOf(value), 1)
+
+    emit('input', localValue)
+    modelValue.value = localValue
+    nextTick(() => {
+      emit('change', localValue)
+    })
   },
-  modelValue,
+  modelValue: computed(() => modelValue.value),
   switch: switchesBoolean,
-  buttonVariant: toRef(props, 'buttonVariant'),
-  form: toRef(props, 'form'),
+  buttonVariant: readonly(toRef(props, 'buttonVariant')),
+  form: readonly(toRef(props, 'form')),
   name: computedName,
   state: stateBoolean,
   plain: plainBoolean,
-  size: toRef(props, 'size'),
+  size: readonly(toRef(props, 'size')),
   inline: computed(() => !stackedBoolean.value),
   required: requiredBoolean,
   buttons: buttonsBoolean,
   disabled: disabledBoolean,
 })
 
-watchEffect(() => (modelValue.value = activeValues.value))
-
-const normalizeOptions = computed<
-  {
-    props: {
-      value: string | undefined
-      disabled: boolean | undefined
-    }
-    text: string | undefined
-    html: string | undefined
-    self: symbol
-  }[]
->(() =>
+const normalizeOptions = computed(() =>
   props.options.map((el, ind) =>
-    typeof el === 'string'
+    typeof el === 'string' || typeof el === 'number'
       ? {
           props: {
             value: el,
             disabled: disabledBoolean.value,
           },
-          text: el,
+          text: el.toString(),
           html: undefined,
           self: Symbol(`checkboxGroupOptionItem${ind}`),
         }
       : {
           props: {
-            value: el[props.valueField] as string | undefined,
+            value: el[props.valueField] as string | number | undefined,
             disabled: el[props.disabledField] as boolean | undefined,
             ...(el.props ? el.props : {}),
           },

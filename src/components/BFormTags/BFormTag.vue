@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, toRef, useSlots, type VNodeNormalizedChildren} from 'vue'
+import {computed, toRef, useSlots} from 'vue'
 import {useBooleanish, useId} from '../../composables'
 import type {Booleanish, ColorVariant} from '../../types'
 import BCloseButton from '../BButton/BCloseButton.vue'
@@ -41,6 +41,8 @@ interface BFormTagProps {
 }
 
 const props = withDefaults(defineProps<BFormTagProps>(), {
+  id: undefined,
+  title: undefined,
   disabled: false,
   noRemove: false,
   pill: false,
@@ -50,7 +52,7 @@ const props = withDefaults(defineProps<BFormTagProps>(), {
 })
 
 interface BFormTagEmits {
-  (e: 'remove', value?: VNodeNormalizedChildren): void
+  (e: 'remove', value: string): void
 }
 
 const emit = defineEmits<BFormTagEmits>()

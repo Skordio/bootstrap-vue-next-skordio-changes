@@ -24,16 +24,20 @@ interface BFormValidFeedbackProps {
   id?: string
   role?: string
   text?: string
-  state?: Booleanish
+  state?: Booleanish | null
   tag?: string
   tooltip?: Booleanish
 }
 
 const props = withDefaults(defineProps<BFormValidFeedbackProps>(), {
+  id: undefined,
+  role: undefined,
+  text: undefined,
+  ariaLive: undefined,
   forceShow: false,
   tag: 'div',
   tooltip: false,
-  state: undefined,
+  state: null,
 })
 
 const forceShowBoolean = useBooleanish(toRef(props, 'forceShow'))
