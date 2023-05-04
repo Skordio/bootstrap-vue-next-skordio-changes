@@ -25,6 +25,10 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  variant: undefined,
+  size: 'md',
+  animation: undefined,
+  width: undefined,
   tag: 'span',
   wrapperTag: 'span',
   cols: 12,
@@ -49,7 +53,7 @@ const colsString = computed<string | undefined>(() =>
 const computedClasses = computed(() => ({
   [`col-${colsString.value}`]: colsString.value !== undefined && widthString.value === undefined,
   [`bg-${props.variant}`]: props.variant !== undefined,
-  [`placeholder-${props.size}`]: props.size !== undefined,
+  [`placeholder-${props.size}`]: props.size !== 'md',
 }))
 
 const wrapperClasses = computed(() => ({

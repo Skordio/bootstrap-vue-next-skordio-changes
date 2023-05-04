@@ -61,19 +61,23 @@ interface BFormSelectProps {
   required?: Booleanish
   selectSize?: number
   size?: Size
-  state?: Booleanish
+  state?: Booleanish | null
   textField?: string
   valueField?: string
-  modelValue?: string | unknown[] | Record<string, unknown> | number
+  modelValue?: string | unknown[] | Record<string, unknown> | number | null
 }
 
 const props = withDefaults(defineProps<BFormSelectProps>(), {
+  form: undefined,
+  id: undefined,
+  name: undefined,
+  size: 'md',
   ariaInvalid: undefined,
   autofocus: false,
   disabled: false,
   disabledField: 'disabled',
   htmlField: 'html',
-  state: undefined,
+  state: null,
   labelField: 'label',
   multiple: false,
   options: () => [],
@@ -113,9 +117,9 @@ useFocus(input, {
 
 const computedClasses = computed(() => ({
   'form-control': plainBoolean.value,
-  [`form-control-${props.size}`]: props.size && plainBoolean.value,
+  [`form-control-${props.size}`]: props.size !== 'md' && plainBoolean.value,
   'form-select': !plainBoolean.value,
-  [`form-select-${props.size}`]: props.size && !plainBoolean.value,
+  [`form-select-${props.size}`]: props.size !== 'md' && !plainBoolean.value,
   'is-valid': stateBoolean.value === true,
   'is-invalid': stateBoolean.value === false,
 }))
@@ -131,9 +135,14 @@ const computedAriaInvalid = computed(() =>
   resolveAriaInvalid(props.ariaInvalid, stateBoolean.value)
 )
 
+// TODO this needs to be redone to fit the structure of BFormCheckboxGroup
+// It also doesn't work for array syntaxes. Review second example from https://bootstrap-vue.org/docs/components/form-select
+// For more info on how it should behave
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const formOptions = computed(() => normalizeOptions(props.options as any[], 'BFormSelect', props))
 const localValue = computed({
   get: () => modelValue.value,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   set: (newValue: any) => {
     emit('change', newValue)
     modelValue.value = newValue

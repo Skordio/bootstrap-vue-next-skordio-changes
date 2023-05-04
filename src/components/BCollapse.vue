@@ -15,14 +15,13 @@
 </template>
 
 <script setup lang="ts">
-import {computed, nextTick, onMounted, ref, toRef, watchEffect} from 'vue'
+import {computed, nextTick, onMounted, provide, readonly, ref, toRef, watch, watchEffect} from 'vue'
 import {useBooleanish, useId} from '../composables'
 import {useEventListener, useVModel} from '@vueuse/core'
 import type {Booleanish} from '../types'
-import {BvTriggerableEvent} from '../utils'
+import {BvTriggerableEvent, collapseInjectionKey} from '../utils'
 
 interface BCollapseProps {
-  accordion?: string
   // appear?: Booleanish
   id?: string
   modelValue?: Booleanish
@@ -32,16 +31,6 @@ interface BCollapseProps {
   visible?: Booleanish
   isNav?: Booleanish
 }
-
-const props = withDefaults(defineProps<BCollapseProps>(), {
-  modelValue: false,
-  tag: 'div',
-  toggle: false,
-  horizontal: false,
-  visible: false,
-  isNav: false,
-})
-
 interface BCollapseEmits {
   (e: 'show', value: BvTriggerableEvent): void
   (e: 'shown', value: BvTriggerableEvent): void
@@ -51,6 +40,17 @@ interface BCollapseEmits {
   (e: 'show-prevented'): void
   (e: 'update:modelValue', value: boolean): void
 }
+
+const props = withDefaults(defineProps<BCollapseProps>(), {
+  accordion: undefined,
+  id: undefined,
+  modelValue: false,
+  tag: 'div',
+  toggle: false,
+  horizontal: false,
+  visible: false,
+  isNav: false,
+})
 
 const buildTriggerableEvent = (
   type: string,
@@ -147,7 +147,7 @@ const hide = () => {
   })
 }
 
-watchEffect(() => {
+watch([modelValue, show], () => {
   if (modelValueBoolean.value === true) {
     if (show.value) return
     reveal()
@@ -180,8 +180,8 @@ if (visibleBoolean.value) {
   show.value = true
 }
 
-watchEffect(() => {
-  visibleBoolean.value ? open() : close()
+watch(visibleBoolean, (newval) => {
+  newval ? open() : close()
 })
 
 useEventListener(element, 'bv-toggle', () => {
@@ -192,7 +192,17 @@ defineExpose({
   close,
   open,
   toggle,
-  visible: show.value,
+  visible: readonly(show),
+  isNav: isNavBoolean,
+})
+
+provide(collapseInjectionKey, {
+  id: computedId,
+  close,
+  open,
+  toggle,
+  visible: readonly(show),
+  isNav: isNavBoolean,
 })
 </script>
 
