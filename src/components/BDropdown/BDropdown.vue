@@ -22,9 +22,10 @@
       :variant="variant"
       :size="size"
       :disabled="disabled"
-      :class="toggleClass"
+      :class="[toggleClass, ...[modelValueBoolean ? 'show' : undefined]]"
       class="dropdown-toggle-split dropdown-toggle"
-      aria-expanded="false"
+      :aria-expanded="modelValueBoolean"
+      aria-haspopup="menu"
       @click="onButtonClick"
     >
       <span class="visually-hidden">
@@ -40,8 +41,8 @@
     ref="floating"
     :style="{
       position: strategy === 'absolute' ? undefined : 'fixed',
-      top: `${y ?? 0}px`,
-      left: `${x ?? 0}px`,
+      top: `${y}px`,
+      left: `${x}px`,
       width: 'max-content',
     }"
     class="dropdown-menu show"
@@ -230,6 +231,7 @@ const buttonClasses = computed(() => [
     'dropdown-toggle': !splitBoolean.value,
     'dropdown-toggle-no-caret': noCaretBoolean.value && !splitBoolean.value,
     'w-100': splitBoolean.value && blockBoolean.value,
+    'show': splitBoolean.value ? undefined : modelValueBoolean.value,
   },
 ])
 
@@ -241,7 +243,8 @@ const dropdownMenuClasses = computed(() => [
 ])
 
 const buttonAttr = computed(() => ({
-  'aria-expanded': splitBoolean.value ? undefined : false,
+  'aria-expanded': splitBoolean.value ? undefined : modelValueBoolean.value,
+  'aria-haspopup': splitBoolean.value ? undefined : 'menu',
   'href': splitBoolean.value ? props.splitHref : undefined,
   'to': splitBoolean.value && props.splitTo ? props.splitTo : undefined,
 }))

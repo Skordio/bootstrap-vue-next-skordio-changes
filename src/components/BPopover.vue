@@ -2,8 +2,9 @@
   <span ref="placeholder" />
   <slot name="target" v-bind="{show, hide, toggle, showState}" />
   <!-- TODO: fix this clunky solution when https://github.com/vuejs/core/issues/6152 is fixed -->
-  <teleport v-if="container" :to="container">
+  <RenderComponentOrSkip :tag="'Teleport'" :to="container" :skip="!container">
     <div
+      v-if="showStateInternal"
       :id="id"
       v-bind="$attrs"
       ref="element"
@@ -12,8 +13,8 @@
       tabindex="-1"
       :style="{
         position: strategy,
-        top: `${y ?? 0}px`,
-        left: `${x ?? 0}px`,
+        top: `${y}px`,
+        left: `${x}px`,
         width: 'max-content',
       }"
     >
@@ -52,77 +53,34 @@
         <!-- eslint-enable vue/no-v-html -->
       </template>
     </div>
-  </teleport>
-  <div
-    v-else
-    :id="id"
-    v-bind="$attrs"
-    ref="element"
-    :class="computedClasses"
-    role="tooltip"
-    tabindex="-1"
-    :style="{
-      position: strategy,
-      top: `${y ?? 0}px`,
-      left: `${x ?? 0}px`,
-      width: 'max-content',
-    }"
-  >
-    <div
-      ref="arrow"
-      :class="`${tooltipBoolean ? 'tooltip' : 'popover'}-arrow`"
-      :style="arrowStyle"
-      data-popper-arrow
-    />
-    <template v-if="title || $slots.title">
-      <div v-if="!isHtml" :class="tooltipBoolean ? 'tooltip-inner' : 'popover-header'">
-        <slot name="title">
-          {{ title }}
-        </slot>
-      </div>
-      <!-- eslint-disable vue/no-v-html -->
-      <div
-        v-else
-        :class="tooltipBoolean ? 'tooltip-inner' : 'popover-header'"
-        v-html="sanitizedTitle"
-      />
-      <!-- eslint-enable vue/no-v-html -->
-    </template>
-    <template v-if="(tooltipBoolean && !$slots.title && !title) || !tooltipBoolean">
-      <div v-if="!isHtml" :class="tooltipBoolean ? 'tooltip-inner' : 'popover-body'">
-        <slot>
-          {{ content }}
-        </slot>
-      </div>
-      <!-- eslint-disable vue/no-v-html -->
-      <div
-        v-else
-        :class="tooltipBoolean ? 'tooltip-inner' : 'popover-body'"
-        v-html="sanitizedContent"
-      />
-      <!-- eslint-enable vue/no-v-html -->
-    </template>
-  </div>
+  </RenderComponentOrSkip>
 </template>
 
 <script lang="ts" setup>
 import {
+  type Alignment,
   arrow as arrowMiddleware,
+  autoPlacement,
   autoUpdate,
   flip,
   hide as hideMiddleware,
   inline,
   type Middleware,
   offset,
-  type Placement,
+  type Placement as OriginalPlacement,
   shift,
   type Strategy,
   useFloating,
 } from '@floating-ui/vue'
-import {BvTriggerableEvent, IS_BROWSER, resolveBootstrapPlacement} from '../utils'
+import {
+  BvTriggerableEvent,
+  getTransitionDelay,
+  IS_BROWSER,
+  resolveBootstrapPlacement,
+} from '../utils'
 import {DefaultAllowlist, sanitizeHtml} from '../utils/sanitizer'
 import {onClickOutside, useMouseInElement} from '@vueuse/core'
-
+import RenderComponentOrSkip from './RenderComponentOrSkip.vue'
 import {
   type ComponentPublicInstance,
   computed,
@@ -137,7 +95,7 @@ import {
   watchEffect,
 } from 'vue'
 import {useBooleanish, useId} from '../composables'
-import type {Booleanish, ColorVariant} from '../types'
+import type {Booleanish, BPopoverPlacement, ColorVariant} from '../types'
 
 interface DelayObject {
   show: number
@@ -146,7 +104,7 @@ interface DelayObject {
 
 interface BPopoverProps {
   modelValue?: Booleanish
-  container?: string | ComponentPublicInstance<HTMLElement> | HTMLElement | null
+  container?: string | ComponentPublicInstance<HTMLElement> | HTMLElement | undefined
   target?:
     | (() => HTMLElement | VNode)
     | string
@@ -170,7 +128,7 @@ interface BPopoverProps {
   variant?: ColorVariant
   offset?: number | null
   customClass?: string
-  placement?: Placement
+  placement?: BPopoverPlacement
   strategy?: Strategy
   floatingMiddleware?: Middleware[]
   noFlip?: Booleanish
@@ -190,7 +148,7 @@ const props = withDefaults(defineProps<BPopoverProps>(), {
   id: undefined,
   content: undefined,
   modelValue: false,
-  container: null,
+  container: undefined,
   customClass: '',
   placement: 'top',
   strategy: 'absolute',
@@ -226,6 +184,7 @@ const emit = defineEmits<BPopoverEmits>()
 
 const modelValueBoolean = useBooleanish(toRef(props, 'modelValue'))
 const showState = ref(modelValueBoolean.value)
+const showStateInternal = ref(modelValueBoolean.value)
 watchEffect(() => {
   emit('update:modelValue', showState.value)
 })
@@ -296,6 +255,7 @@ const sanitizedTitle = computed(() =>
 const sanitizedContent = computed(() =>
   props.content ? sanitizeHtml(props.content, DefaultAllowlist) : ''
 )
+const isAutoPlacement = computed(() => props.placement.startsWith('auto'))
 
 const floatingMiddleware = computed<Middleware[]>(() => {
   if (props.floatingMiddleware !== undefined) {
@@ -303,8 +263,15 @@ const floatingMiddleware = computed<Middleware[]>(() => {
   }
   const off = props.offset ? props.offset : tooltipBoolean.value ? 0 : 10
   const arr: Middleware[] = [offset(off)]
-  if (noFlipBoolean.value === false) {
+  if (noFlipBoolean.value === false && !isAutoPlacement.value) {
     arr.push(flip())
+  }
+  if (isAutoPlacement.value) {
+    arr.push(
+      autoPlacement({
+        alignment: (props.placement.split('-')[1] as Alignment) || undefined,
+      })
+    )
   }
   if (noShiftBoolean.value === false) {
     arr.push(shift())
@@ -319,7 +286,9 @@ const floatingMiddleware = computed<Middleware[]>(() => {
   return arr
 })
 
-const placementRef = computed(() => props.placement)
+const placementRef = computed(() =>
+  isAutoPlacement.value ? undefined : (props.placement as OriginalPlacement)
+)
 
 const {x, y, strategy, middlewareData, placement, update} = useFloating(target, element, {
   placement: placementRef,
@@ -397,16 +366,20 @@ const show = () => {
     emit('show-prevented')
     return
   }
-  setTimeout(
-    () => {
-      update()
-      showState.value = true
-      nextTick(() => {
-        emit('shown', buildTriggerableEvent('shown'))
-      })
-    },
-    typeof props.delay === 'number' ? props.delay : props.delay?.show || 0
-  )
+  showStateInternal.value = true
+  nextTick(() => {
+    update()
+    setTimeout(
+      () => {
+        update()
+        showState.value = true
+        nextTick(() => {
+          emit('shown', buildTriggerableEvent('shown'))
+        })
+      },
+      typeof props.delay === 'number' ? props.delay : props.delay?.show || 0
+    )
+  })
 }
 
 const hide = (e: Event) => {
@@ -426,6 +399,12 @@ const hide = (e: Event) => {
     ) {
       showState.value = false
       nextTick(() => {
+        setTimeout(
+          () => {
+            showStateInternal.value = false
+          },
+          element.value ? getTransitionDelay(element.value) : 150
+        )
         emit('hidden', buildTriggerableEvent('hidden'))
       })
     } else {
