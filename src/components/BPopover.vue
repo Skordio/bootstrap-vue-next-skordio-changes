@@ -56,7 +56,7 @@
   </RenderComponentOrSkip>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import {
   type Alignment,
   arrow as arrowMiddleware,
@@ -97,6 +97,10 @@ import {
 import {useBooleanish, useId} from '../composables'
 import type {Booleanish, BPopoverPlacement, ColorVariant} from '../types'
 
+defineOptions({
+  inheritAttrs: false,
+})
+
 interface DelayObject {
   show: number
   hide: number
@@ -125,7 +129,7 @@ interface BPopoverProps {
   delay?: number | DelayObject
   click?: Booleanish
   manual?: Booleanish
-  variant?: ColorVariant
+  variant?: ColorVariant | null
   offset?: number | null
   customClass?: string
   placement?: BPopoverPlacement
@@ -155,7 +159,7 @@ const props = withDefaults(defineProps<BPopoverProps>(), {
   delay: () => ({show: 100, hide: 300}),
   click: false,
   manual: false,
-  variant: undefined,
+  variant: null,
   offset: null,
   noFlip: false,
   noShift: false,
@@ -327,7 +331,7 @@ const computedClasses = computed(() => {
     type,
     `b-${type}`,
     {
-      [`b-${type}-${props.variant}`]: props.variant !== undefined,
+      [`b-${type}-${props.variant}`]: props.variant !== null,
       show: showState.value && !hidden.value,
       ['pe-none']: !showState.value,
       fade: !noFadeBoolean.value,
@@ -481,10 +485,4 @@ watch(
 onMounted(bind)
 
 onBeforeUnmount(unbind)
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
-}
 </script>
